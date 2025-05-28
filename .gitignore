@@ -1,0 +1,5 @@
+learning-ml
+env
+dataset/
+.vscode/
+*.csv

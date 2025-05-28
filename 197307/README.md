@@ -1,0 +1,2 @@
+Extract dataset files from https://quera.org/contest/assignments/4367/download_problem_initial_project/197307/ to dataset directory of root
+Then make an environtment and run pip install -r requirements.txt in it
