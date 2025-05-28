@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 df_train = pd.read_csv(
     "store-sales-time-series-forecasting/dataset/train.csv",
@@ -36,4 +37,5 @@ store_arr = df_train['store_nbr'].unique()
 store_nums = len(store_arr)
 
 for store in store_arr:
-  x_train = df_train.loc
+  x_train_store = df_train[df_train['store_nbr'] == 1]
+  pass
