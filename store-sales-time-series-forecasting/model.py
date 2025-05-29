@@ -11,7 +11,7 @@ def main():
         index_col='id',
         parse_dates=['date'],
     )
-    df_train['Time'] = np.repeat(np.arange(1684),1782)
+    df_train['time'] = np.repeat(np.arange(1684),1782)
 
     # becaues of earthquake
     df_train = df_train[~((df_train['date'] >= "2016-05-16") & (df_train['date'] <= "2016-05-31"))]
@@ -24,6 +24,7 @@ def main():
         index_col='id',
         parse_dates=['date'],
     )
+    df_test['time'] = np.repeat(np.arange(16),1782)
 
     df_sample = pd.read_csv(
         "store-sales-time-series-forecasting/dataset/sample_submission.csv",
@@ -101,19 +102,22 @@ def main():
         ## drawing correlation plot of lag feature 
         # draw_plot(x_train_store['lag_1782'], y_train_store)
 
+        x_train_store.drop('date', axis=1, inplace=True)
         model = LinearRegression()
         model.fit(x_train_store, y_train_store)
 
         # get number of date in x_train
-        date_arr = x_train_store['date'].unique()
-        date_nums = len(date_arr)
-        for date in date_arr:
-            x_train_date = x_train_store[x_train_store['date'] == date]
-            x_test_date = x_test_store[x_test_store['date'] == date]
-
-
-    
-        # result = model.predict(x_test_store)
+        time_arr = x_train_store['time'].unique()
+        date_nums = len(time_arr)
+        lag_feature = np.zeros(1782)
+        for time in time_arr:
+            # x_train_day = x_train_store[x_train_store['time'] == time]
+            x_test_day = x_test_store[x_test_store['time'] == time]
+            x_test_day['lag_1782'] = lag_feature
+            result = model.predict(x_test_day)
+            lag_feature = result
+            pass
+        
         #store_results.append(result)
 
 def draw_plot(a, b):
@@ -126,3 +130,4 @@ def draw_plot(a, b):
 
 if __name__ == '__main__':
     main()
+
