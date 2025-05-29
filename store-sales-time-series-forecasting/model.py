@@ -60,7 +60,7 @@ def main():
     store_arr = df_train['store_nbr'].unique()
     store_nums = len(store_arr)
 
-    store_results = []
+    all_results = []
     # for each store these will be done
     for store in store_arr:
         # fetch x_train and y_train from df_train
@@ -92,7 +92,7 @@ def main():
         # build x_test_store
         # x_train_store['lag_1782'] = y_train_store.shift(1782)
         # x_train_store['lag_1782'][0:1782] = x_train_store['lag_1782'][1782:1782*2] 
-        x_test_store = x_test_store.merge(x_oil, on='date', how='left')
+        x_test_store = x_test_store.merge(test_oil, on='date', how='left')
         x_test_store['dcoilwtico'] = x_test_store['dcoilwtico'].fillna(method='bfill')
         x_test_store = x_test_store.merge(df_transactions, on=['date', 'store_nbr'], how='left')
         x_test_store['transactions'] = x_test_store['transactions'].fillna(0)
@@ -119,15 +119,24 @@ def main():
         time_arr = x_test_store['time'].unique()
         date_nums = len(time_arr)
         lag_feature = np.zeros(33)
+        s_results = []
         for time in time_arr:
             x_train_day = x_train_store[x_train_store['time'] == time]
             x_test_day = x_test_store[x_test_store['time'] == time]
             x_test_day['lag_1782'] = lag_feature
             result = model.predict(x_test_day)
-            # lag_feature = result
-            pass
+            lag_feature = result
+            s_results.append(result)
         
-        #store_results.append(result)
+        all_results.append(np.array(s_results))
+    
+    all_results = np.array(all_results).flatten()
+    submission = pd.DataFrame({
+        'id': df_test.index,
+        'sales': all_results
+    })
+    submission.to_csv('submission.csv', index=False)
+
 
 def draw_plot(a, b):
     plt.plot(a, b, 'o')
