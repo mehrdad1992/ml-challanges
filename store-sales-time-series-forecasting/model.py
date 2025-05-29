@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 
 
@@ -111,12 +112,28 @@ def main():
         # draw_plot(x_train_store['lag_1782'], y_train_store)
 
         x_train_store.drop('date', axis=1, inplace=True)
-        model = LinearRegression()
+
+        # normalize x_train_store
+        columns_to_normalize = [col for col in x_train_store.columns if col != 'time']
+        # Fit-transform and rewrap in a DataFrame
+        scalar = MinMaxScaler(feature_range=(0,1))
+        normalized = scalar.fit_transform(x_train_store[columns_to_normalize])
+        x_train_store[columns_to_normalize] = pd.DataFrame(normalized, columns=columns_to_normalize, index=x_train_store.index)
+
+
+        model = LinearRegression(positive=True)
         model.fit(x_train_store, y_train_store)
 
         # get number of date in x_train
         x_test_store.drop('date', axis=1, inplace=True)
         time_arr = x_test_store['time'].unique()
+
+        # normalize x_test_store
+        columns_to_normalize = [col for col in x_test_store.columns if col != 'time']
+        # Fit-transform and rewrap in a DataFrame
+        normalized = scalar.fit_transform(x_test_store[columns_to_normalize])
+        x_test_store[columns_to_normalize] = pd.DataFrame(normalized, columns=columns_to_normalize, index=x_test_store.index)
+
         date_nums = len(time_arr)
         lag_feature = np.zeros(33)
         s_results = []
