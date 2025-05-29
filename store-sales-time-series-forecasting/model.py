@@ -35,7 +35,6 @@ df_oil = pd.read_csv(
     "store-sales-time-series-forecasting/dataset/oil.csv",
     parse_dates=['date'],
 )
-df_oil['dcoilwtico'] = df_oil['dcoilwtico'].fillna(method='bfill')
 # becaues of earthquake
 df_oil = df_oil[~((df_oil['date'] >= "2016-05-16") & (df_oil['date'] <= "2016-05-31"))]
 x_oil = df_oil.iloc[:-12,:]
@@ -57,9 +56,13 @@ store_nums = len(store_arr)
 for store in store_arr:
   x_train_store = df_train[df_train['store_nbr'] == store]
   y_train_store = x_train_store['sales']
+  y_train_store['Lag_1'] = y_train_store.shift(1)
+#   y_train_store = y_train_store.reindex(columns=['sales', 'Lag_1'])
+
   x_train_store.drop('sales', axis=1, inplace=True)
 #   x_train_store['oil'] = x_oil
   x_train_store = x_train_store.merge(x_oil, on='date', how='left')
+  x_train_store['dcoilwtico'] = x_train_store['dcoilwtico'].fillna(method='bfill')
   x_train_store = x_train_store.merge(df_transactions, on=['date', 'store_nbr'], how='left')
   x_train_store['transactions'] = x_train_store['transactions'].fillna(0)
   x_train_store = x_train_store.merge(df_stores, on='store_nbr', how='left')
