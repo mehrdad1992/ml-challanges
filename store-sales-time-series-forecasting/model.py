@@ -81,7 +81,12 @@ def main():
         x_train_store = x_train_store.merge(df_transactions, on=['date', 'store_nbr'], how='left')
         x_train_store['transactions'] = x_train_store['transactions'].fillna(0)
         x_train_store = x_train_store.merge(df_stores, on='store_nbr', how='left')
-
+        
+        le = LabelEncoder()
+        x_train_store['family'] = le.fit_transform(x_train_store['family'])
+        x_train_store['city'] = le.fit_transform(x_train_store['city'])
+        x_train_store['state'] = le.fit_transform(x_train_store['state'])
+        x_train_store['type'] = le.fit_transform(x_train_store['type'])
         # x_train_store = x_train_store.merge(df_holidays, on='date', how='left')
 
         # build x_test_store
@@ -94,11 +99,14 @@ def main():
         x_test_store = x_test_store.merge(df_stores, on='store_nbr', how='left')
 
         le = LabelEncoder()
-        x_train_store['family'] = le.fit_transform(x_train_store['family'])
-        x_train_store['city'] = le.fit_transform(x_train_store['city'])
-        x_train_store['state'] = le.fit_transform(x_train_store['state'])
-        x_train_store['type'] = le.fit_transform(x_train_store['type'])
-
+        x_test_store['family'] = le.fit_transform(x_test_store['family'])
+        x_test_store['city'] = le.fit_transform(x_test_store['city'])
+        x_test_store['state'] = le.fit_transform(x_test_store['state'])
+        x_test_store['type'] = le.fit_transform(x_test_store['type'])
+        
+        # reorder columns to prevent predicttion method error
+        x_train_store = x_train_store.loc[:, x_test_store.columns.to_list() + ['lag_1782']]
+        
         ## drawing correlation plot of lag feature 
         # draw_plot(x_train_store['lag_1782'], y_train_store)
 
@@ -107,15 +115,16 @@ def main():
         model.fit(x_train_store, y_train_store)
 
         # get number of date in x_train
-        time_arr = x_train_store['time'].unique()
+        x_test_store.drop('date', axis=1, inplace=True)
+        time_arr = x_test_store['time'].unique()
         date_nums = len(time_arr)
-        lag_feature = np.zeros(1782)
+        lag_feature = np.zeros(33)
         for time in time_arr:
-            # x_train_day = x_train_store[x_train_store['time'] == time]
+            x_train_day = x_train_store[x_train_store['time'] == time]
             x_test_day = x_test_store[x_test_store['time'] == time]
             x_test_day['lag_1782'] = lag_feature
             result = model.predict(x_test_day)
-            lag_feature = result
+            # lag_feature = result
             pass
         
         #store_results.append(result)
