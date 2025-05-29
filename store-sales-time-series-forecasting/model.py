@@ -1,76 +1,103 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
+from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
 
-df_train = pd.read_csv(
-    "store-sales-time-series-forecasting/dataset/train.csv",
-    index_col='id',
-    parse_dates=['date'],
-)
-# becaues of earthquake
-df_train = df_train[~((df_train['date'] >= "2016-05-16") & (df_train['date'] <= "2016-05-31"))]
 
-# y_train = df_train['sales']
-# x_train = df_train.drop('sales', axis=1)
+def main():
+    df_train = pd.read_csv(
+        "store-sales-time-series-forecasting/dataset/train.csv",
+        index_col='id',
+        parse_dates=['date'],
+    )
+    # becaues of earthquake
+    df_train = df_train[~((df_train['date'] >= "2016-05-16") & (df_train['date'] <= "2016-05-31"))]
 
-df_test = pd.read_csv(
-    "store-sales-time-series-forecasting/dataset/test.csv",
-    index_col='id',
-    parse_dates=['date'],
-)
+    # y_train = df_train['sales']
+    # x_train = df_train.drop('sales', axis=1)
 
-df_sample = pd.read_csv(
-    "store-sales-time-series-forecasting/dataset/sample_submission.csv",
-    index_col='id',
-)
+    df_test = pd.read_csv(
+        "store-sales-time-series-forecasting/dataset/test.csv",
+        index_col='id',
+        parse_dates=['date'],
+    )
 
-df_holidays = pd.read_csv(
-    "store-sales-time-series-forecasting/dataset/holidays_events.csv",
-    parse_dates=['date'],
-)
-# becaues of earthquake
-df_holidays = df_holidays[~((df_holidays['date'] >= "2016-05-16") & (df_holidays['date'] <= "2016-05-31"))]
+    df_sample = pd.read_csv(
+        "store-sales-time-series-forecasting/dataset/sample_submission.csv",
+        index_col='id',
+    )
 
-df_oil = pd.read_csv(
-    "store-sales-time-series-forecasting/dataset/oil.csv",
-    parse_dates=['date'],
-)
-# becaues of earthquake
-df_oil = df_oil[~((df_oil['date'] >= "2016-05-16") & (df_oil['date'] <= "2016-05-31"))]
-x_oil = df_oil.iloc[:-12,:]
-y_oil = df_oil.iloc[-12:,:]
+    df_holidays = pd.read_csv(
+        "store-sales-time-series-forecasting/dataset/holidays_events.csv",
+        parse_dates=['date'],
+    )
+    # becaues of earthquake
+    df_holidays = df_holidays[~((df_holidays['date'] >= "2016-05-16") & (df_holidays['date'] <= "2016-05-31"))]
 
-df_stores = pd.read_csv("store-sales-time-series-forecasting/dataset/stores.csv")
+    df_oil = pd.read_csv(
+        "store-sales-time-series-forecasting/dataset/oil.csv",
+        parse_dates=['date'],
+    )
+    # becaues of earthquake
+    df_oil = df_oil[~((df_oil['date'] >= "2016-05-16") & (df_oil['date'] <= "2016-05-31"))]
+    x_oil = df_oil.iloc[:-12,:]
+    test_oil = df_oil.iloc[-12:,:]
 
-df_transactions = pd.read_csv(
-    "store-sales-time-series-forecasting/dataset/transactions.csv",
-    parse_dates=['date'],
-)
-# becaues of earthquake
-df_transactions = df_transactions[~((df_transactions['date'] >= "2016-05-16") & (df_transactions['date'] <= "2016-05-31"))]
+    df_stores = pd.read_csv("store-sales-time-series-forecasting/dataset/stores.csv")
 
-# get number of stores in train
-store_arr = df_train['store_nbr'].unique()
-store_nums = len(store_arr)
+    df_transactions = pd.read_csv(
+        "store-sales-time-series-forecasting/dataset/transactions.csv",
+        parse_dates=['date'],
+    )
+    # becaues of earthquake
+    df_transactions = df_transactions[~((df_transactions['date'] >= "2016-05-16") & (df_transactions['date'] <= "2016-05-31"))]
 
-for store in store_arr:
-  x_train_store = df_train[df_train['store_nbr'] == store]
-  y_train_store = x_train_store['sales']
-  y_train_store['Lag_1'] = y_train_store.shift(1)
-#   y_train_store = y_train_store.reindex(columns=['sales', 'Lag_1'])
+    # get number of stores in train
+    store_arr = df_train['store_nbr'].unique()
+    store_nums = len(store_arr)
 
-  x_train_store.drop('sales', axis=1, inplace=True)
-#   x_train_store['oil'] = x_oil
-  x_train_store = x_train_store.merge(x_oil, on='date', how='left')
-  x_train_store['dcoilwtico'] = x_train_store['dcoilwtico'].fillna(method='bfill')
-  x_train_store = x_train_store.merge(df_transactions, on=['date', 'store_nbr'], how='left')
-  x_train_store['transactions'] = x_train_store['transactions'].fillna(0)
-  x_train_store = x_train_store.merge(df_stores, on='store_nbr', how='left')
-  # x_train_store = x_train_store.merge(df_holidays, on='date', how='left')
-  le = LabelEncoder()
-  x_train_store['family'] = le.fit_transform(x_train_store['family'])
-  x_train_store['city'] = le.fit_transform(x_train_store['city'])
-  x_train_store['state'] = le.fit_transform(x_train_store['state'])
-  x_train_store['type'] = le.fit_transform(x_train_store['type'])
+    store_results = []
+    for store in store_arr:
+        x_train_store = df_train[df_train['store_nbr'] == store]
+        y_train_store = x_train_store['sales']
 
-  pass
+        x_train_store['lag_1782'] = y_train_store.shift(1782)
+        x_train_store['lag_1782'][0:1782] = x_train_store['lag_1782'][1782:1782*2] 
+        
+        ## drawing correlation plot of lag feature 
+        # draw_plot(x_train_store['lag_1782'], y_train_store)
+
+
+    x_train_store.drop('sales', axis=1, inplace=True)
+      #   x_train_store['oil'] = x_oil
+    x_train_store = x_train_store.merge(x_oil, on='date', how='left')
+    x_train_store['dcoilwtico'] = x_train_store['dcoilwtico'].fillna(method='bfill')
+    x_train_store = x_train_store.merge(df_transactions, on=['date', 'store_nbr'], how='left')
+    x_train_store['transactions'] = x_train_store['transactions'].fillna(0)
+    x_train_store = x_train_store.merge(df_stores, on='store_nbr', how='left')
+    # x_train_store = x_train_store.merge(df_holidays, on='date', how='left')
+    le = LabelEncoder()
+    x_train_store['family'] = le.fit_transform(x_train_store['family'])
+    x_train_store['city'] = le.fit_transform(x_train_store['city'])
+    x_train_store['state'] = le.fit_transform(x_train_store['state'])
+    x_train_store['type'] = le.fit_transform(x_train_store['type'])
+
+    model = LinearRegression()
+    model.fit(x_train_store, y_train_store)
+
+    result = model.predict(x_test_store)
+    store_results.append(result)
+
+
+
+def draw_plot(a, b):
+    plt.plot(a, b, 'o')
+    plt.xlabel('X Vector')
+    plt.ylabel('Y Vector')
+    plt.title('Line Plot of Two Vectors')
+    plt.grid(True)
+    plt.show()
+
+if __name__ == '__main__':
+    main()
