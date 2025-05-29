@@ -67,7 +67,11 @@ def main():
         
         ## drawing correlation plot of lag feature 
         # draw_plot(x_train_store['lag_1782'], y_train_store)
-
+        model = LinearRegression()
+        model.fit(x_train_store, y_train_store)
+    
+        result = model.predict(x_test_store)
+        store_results.append(result)
 
     x_train_store.drop('sales', axis=1, inplace=True)
       #   x_train_store['oil'] = x_oil
@@ -83,11 +87,7 @@ def main():
     x_train_store['state'] = le.fit_transform(x_train_store['state'])
     x_train_store['type'] = le.fit_transform(x_train_store['type'])
 
-    model = LinearRegression()
-    model.fit(x_train_store, y_train_store)
 
-    result = model.predict(x_test_store)
-    store_results.append(result)
 
 
 
