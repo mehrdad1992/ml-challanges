@@ -2,3 +2,5 @@ env
 dataset/
 .vscode/
 *.csv
+.sql
+.zip
