@@ -152,7 +152,7 @@ def main():
         'id': df_test.index,
         'sales': all_results
     })
-    submission.to_csv('submission.csv', index=False)
+    submission.to_csv('store-sales-time-series-forecasting/submission.csv', index=False)
 
 
 def draw_plot(a, b):
