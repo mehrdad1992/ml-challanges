@@ -18,8 +18,8 @@ from xgboost import XGBClassifier
 # You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using "Save & Run All" 
 # You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session
 
-train = pd.read_csv('titanic/data/train.csv', index_col='PassengerId')
-x_test = pd.read_csv('titanic/data/test.csv', index_col='PassengerId')
+train = pd.read_csv('data/train.csv', index_col='PassengerId')
+x_test = pd.read_csv('data/test.csv', index_col='PassengerId')
 
 print(train.describe())
 print(train.shape)
@@ -107,4 +107,4 @@ print(x_test.index)
 print(y_test)
 
 file = pd.DataFrame({"PassengerId":x_test.index, "Survived":y_test})
-file.to_csv("titanic/data/gender_submission.csv", index=False)
+file.to_csv("data/gender_submission.csv", index=False)
