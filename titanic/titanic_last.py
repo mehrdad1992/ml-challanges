@@ -5,7 +5,9 @@
 import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
+import xgboost as xgb
 
 # Input data files are available in the read-only "../input/" directory
 # For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory
@@ -14,6 +16,7 @@ from xgboost import XGBClassifier
 # for dirname, _, filenames in os.walk('/kaggle/input'):
 #     for filename in filenames:
 #         print(os.path.join(dirname, filename))
+
 
 # You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using "Save & Run All" 
 # You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session
@@ -96,15 +99,34 @@ x_test.drop(['Embarked'], axis=1, inplace=True)
 
 print(x_test.head(10))
 
-model = XGBClassifier(use_label_encoder=False)
-model.fit(x_train, y_train)
+# Train model base xgboost predictor
+dtrain_full = xgb.DMatrix(x_train, label=y_train)
+dtest = xgb.DMatrix(x_test)
+params = {
+    'max_depth': 5,
+    'learning_rate': 0.01,
+    'n_estimators': 100,  # ignored in XGBoost API
+    'objective': 'binary:logistic',
+    'eval_metric': 'logloss',
+    'subsample': 0.8,
+    'colsample_bytree': 1.0,
+    'gamma': 0.1,
+    'reg_alpha': 0.01,
+    'reg_lambda': 1.5,
+    'verbosity': 0
+}
+model = xgb.train(params, dtrain_full, num_boost_round=100)
+y_test_probs = model.predict(dtest)
+y_pred = (y_test_probs >= 0.5).astype(int)
 
-
-y_test = model.predict(x_test)
+# Train random forrest
+# model = RandomForestClassifier(n_estimators=100, max_depth=3, random_state=2)
+# model.fit(x_train, y_train)
+# y_pred = model.predict(x_test)
 
 print("y_train shape: ", y_train.shape)
 print(x_test.index)
-print(y_test)
+print(y_pred)
 
-file = pd.DataFrame({"PassengerId":x_test.index, "Survived":y_test})
+file = pd.DataFrame({"PassengerId":x_test.index, "Survived":y_pred})
 file.to_csv("titanic/data/gender_submission.csv", index=False)
