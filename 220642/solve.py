@@ -36,9 +36,11 @@ for chunk in pd.read_csv('./220642/dataset/qoura_questions.csv', chunksize=1):
         combined.sort()
         w_sorted, c_sorted = zip(*combined)
 
-        wl = w.lower()
-        if wl[0] == 'm' and wl[-1] == 't' and len(wl) > 4:
-            total_mt_words += 1
+    # mt words count
+    pattern = '\bm\w*t[!?,;]?'
+    matches = re.findall(pattern, line, flags=re.IGNORECASE)
+    counts = Counter(matches)
+    total_mt_words += sum(counts.values())
 
     # emojies count
     found_emojis = emoji_pattern.findall(line)
@@ -52,7 +54,7 @@ with open('./220642/output.txt', 'w') as f:
             + w_sorted[1] + ":" + str(c_sorted[1]) + " " 
             + w_sorted[2] + ":" + str(c_sorted[2]) + " "
             + w_sorted[3] + ":" + str(c_sorted[3]) + " " 
-            + w_sorted[4] + ":" + str(c_sorted[4]))
+            + w_sorted[4] + ":" + str(c_sorted[4]) + "\n")
     f.write(str(sum(1 for c in unique_words_count if c==1)))
 
 
