@@ -11,10 +11,18 @@ def main():
     train_labels = pd.read_csv("./fake-or-real-impostor-hunt/dataset/train.csv", index_col="id")
     # df_train_real_fake = 
 
+    for i in range(df_train.shape[0]):
+        if int(train_labels.loc[i, 'real_text_id']) == 2:
+            temp = df_train.iat[i, 0]
+            df_train.iat[i, 0] = df_train.iat[i, 1]
+            df_train.iat[i, 1] = temp
+
+    df_train.columns = ['real', 'fake']
+
     # Tokenize
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    dataset = load_dataset('csv', data_files='your_data.csv')
-    tokenized = dataset.map(lambda x: tokenizer(x['text'], truncation=True, padding='max_length'), batched=True)
+    # dataset = load_dataset('csv', data_files='your_data.csv')
+    # tokenized = dataset.map(lambda x: tokenizer(x['text'], truncation=True, padding='max_length'), batched=True)
 
     # Model
     model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=2)
