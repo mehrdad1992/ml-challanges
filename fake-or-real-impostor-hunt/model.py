@@ -148,52 +148,55 @@ def baseline_chars_method(df):
   predictions=[1 if left_scores[k]>right_scores[k] else 2 for k in range(len(left_scores))]
   return predictions
 
+def main():
+  # Use the above function to load both train and test data
+  train_path="./fake-or-real-impostor-hunt/dataset/train"
+  df_train=read_texts_from_dir(train_path)
+  test_path="./fake-or-real-impostor-hunt/dataset/test"
+  df_test=read_texts_from_dir(test_path)
 
-# Use the above function to load both train and test data
-train_path="./fake-or-real-impostor-hunt/dataset/train"
-df_train=read_texts_from_dir(train_path)
-test_path="./fake-or-real-impostor-hunt/dataset/test"
-df_test=read_texts_from_dir(test_path)
+  print("Train head: ", df_train.head())
+  print("Test head: ", df_test.head())
 
-print("Train head: ", df_train.head())
-print("Test head: ", df_test.head())
+  # Load ground truth for train data
+  df_train_gt=pd.read_csv("./fake-or-real-impostor-hunt/dataset/train.csv")
+  print("ground truth: ", df_train_gt)
 
-# Load ground truth for train data
-df_train_gt=pd.read_csv("./fake-or-real-impostor-hunt/dataset/train.csv")
-print("ground truth: ", df_train_gt)
+  # Use the algorithm for the train data and check accuracy
+  predictions_train=baseline_method_english_word(df_train)
+  gt_train=list(df_train_gt['real_text_id'])
+  evaluate_baseline(predictions_train, gt_train)
 
-# Use the algorithm for the train data and check accuracy
-predictions_train=baseline_method_english_word(df_train)
-gt_train=list(df_train_gt['real_text_id'])
-evaluate_baseline(predictions_train, gt_train)
+  # Use the algorithm for the test data
+  predictions_test=baseline_method_english_word(df_test)
 
-# Use the algorithm for the test data
-predictions_test=baseline_method_english_word(df_test)
+  # Change the format of predictions into requested format, as described in Overview section of this competition
+  df_results_test=pd.DataFrame(predictions_test)
+  output_df = df_results_test.copy()
+  output_df.columns = ['real_text_id']
+  output_df.reset_index(inplace=True)
+  output_df.rename(columns={'index': 'id'}, inplace=True)
+  print("changed format output: ", output_df)
 
-# Change the format of predictions into requested format, as described in Overview section of this competition
-df_results_test=pd.DataFrame(predictions_test)
-output_df = df_results_test.copy()
-output_df.columns = ['real_text_id']
-output_df.reset_index(inplace=True)
-output_df.rename(columns={'index': 'id'}, inplace=True)
-print("changed format output: ", output_df)
+  output_df.to_csv('./fake-or-real-impostor-hunt/sample_submission_1.csv', index=False)
 
-output_df.to_csv('./fake-or-real-impostor-hunt/sample_submission_1.csv', index=False)
+  # Use the algorithm for the train data and check accuracy
+  predictions_train_char=baseline_chars_method(df_train)
+  gt_train=list(df_train_gt['real_text_id'])
+  evaluate_baseline(predictions_train_char, gt_train, text='Score with latin detection:')
 
-# Use the algorithm for the train data and check accuracy
-predictions_train_char=baseline_chars_method(df_train)
-gt_train=list(df_train_gt['real_text_id'])
-evaluate_baseline(predictions_train_char, gt_train, text='Score with latin detection:')
+  # Use the algorithm for the test data
+  preds_test_char=baseline_chars_method(df_test)
 
-# Use the algorithm for the test data
-preds_test_char=baseline_chars_method(df_test)
+  # Change the format of predictions into requested format, as described in Overview section of this competition
+  df_results_test_char=pd.DataFrame(preds_test_char)
+  output_df_char = df_results_test_char.copy()
+  output_df_char.columns = ['real_text_id']
+  output_df_char.reset_index(inplace=True)
+  output_df_char.rename(columns={'index': 'id'}, inplace=True)
+  print("changed format predictions: ", output_df_char)
 
-# Change the format of predictions into requested format, as described in Overview section of this competition
-df_results_test_char=pd.DataFrame(preds_test_char)
-output_df_char = df_results_test_char.copy()
-output_df_char.columns = ['real_text_id']
-output_df_char.reset_index(inplace=True)
-output_df_char.rename(columns={'index': 'id'}, inplace=True)
-print("changed format predictions: ", output_df_char)
+  output_df_char.to_csv('./fake-or-real-impostor-hunt/sample_submission_2.csv', index=False)
 
-output_df_char.to_csv('./fake-or-real-impostor-hunt/sample_submission_2.csv', index=False)
+if __name__ == "__main__":
+    main()
