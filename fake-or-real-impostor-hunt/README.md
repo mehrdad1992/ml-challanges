@@ -1,0 +1,5 @@
+Competition link:
+https://www.kaggle.com/competitions/fake-or-real-the-impostor-hunt
+
+Dataset:
+https://storage.googleapis.com/kaggle-competitions-data/kaggle-v2/105874/12964783/bundle/archive.zip?GoogleAccessId=web-data@kaggle-161607.iam.gserviceaccount.com&Expires=1753532448&Signature=hRq3%2FF2hEKUvK0K%2BnJU5WAY7MIsgHffxVSw4yTPLLKwjAa98DMPpfuSDcD1fyNUMGrZaKCEOaqekKD%2BsmjdLB48eV5BJjVgSNL2VT0GOqvqVFsYqOdV5C7rkg1bRuqJsQdm3TPCYqQFJ5Wf7wEswrlpQ%2BbBt7Y5SF5UAe%2BugyoXMFQ0xbMRitdXBugniALBy77gOitMW2KCiYDXK9wgdGA3qUboSRblkpMwfwG0q4NusQsClzM44%2BsyhPe%2FWWirO2yViYEV%2Bfow2AHFYm1dDZ4ycLroj2KGqYLgvLey4GnDDegawGLPusEo660fzX%2F2mJMQRCbeCHlvh0Ub2FtJmeA%3D%3D&response-content-disposition=attachment%3B+filename%3Dfake-or-real-the-impostor-hunt.zip
