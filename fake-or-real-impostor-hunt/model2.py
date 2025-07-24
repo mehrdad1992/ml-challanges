@@ -1,50 +1,63 @@
-from model import read_texts_from_dir, baseline_chars_method, baseline_method_english_word
+from model import read_texts_from_dir
 from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
+from datasets import Dataset
 import pandas as pd
 
 def main():
-    # Use the above function to load both train and test data
-    train_path="./fake-or-real-impostor-hunt/dataset/train"
-    df_train=read_texts_from_dir(train_path)
-    test_path="./fake-or-real-impostor-hunt/dataset/test"
-    df_test=read_texts_from_dir(test_path)
+    # Load train and test data
+    train_path = "./fake-or-real-impostor-hunt/dataset/train"
+    df_train = read_texts_from_dir(train_path)
+    test_path = "./fake-or-real-impostor-hunt/dataset/test"
+    df_test = read_texts_from_dir(test_path)
     train_labels = pd.read_csv("./fake-or-real-impostor-hunt/dataset/train.csv", index_col="id")
 
     for i in range(df_train.shape[0]):
         if int(train_labels.loc[i, 'real_text_id']) == 2:
-            # swap if reak and fake are not in the place
+            # swap if real and fake are not in the place
             temp = df_train.iat[i, 0]
             df_train.iat[i, 0] = df_train.iat[i, 1]
             df_train.iat[i, 1] = temp
 
     df_train.columns = ['real', 'fake']
+    df_train['label'] = 0  # real is label 0
 
-    # Tokenize trian
+    # tokenized_test_1 = df_test['file_1'].map(lambda x: tokenizer(x, truncation=True, padding='max_length'))
+    # # tokenized_test_2 = df_test['file_2'].map(lambda x: tokenizer_test(x, truncation=True, padding='max_length'))
+    # tokenized_ids_1 = tokenized_test_1.map(lambda x: x['input_ids'])
+    # # tokenized_ids_2 = tokenized_test_2.map(lambda x: x['input_ids'])
+
+    # tokenizer
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    # dataset = load_dataset('csv', data_files='your_data.csv')
-    # tokenized = df_train.map(lambda x: tokenizer(x['real'], truncation=True, padding='max_length'), batched=True)
-    tokenized_train = df_train['real'].map(lambda x: tokenizer(x, truncation=True, padding='max_length'))
-    tokenized_ids_train = tokenized_train.map(lambda x: x['input_ids'])
 
-    # Tokenize test
-    tokenized_test_1 = df_test['file_1'].map(lambda x: tokenizer(x, truncation=True, padding='max_length'))
-    # tokenized_test_2 = df_test['file_2'].map(lambda x: tokenizer_test(x, truncation=True, padding='max_length'))
-    tokenized_ids_1 = tokenized_test_1.map(lambda x: x['input_ids'])
-    # tokenized_ids_2 = tokenized_test_2.map(lambda x: x['input_ids'])
+    # Create huggingface dataset
+    dataset_train = Dataset.from_pandas(df_train[['real', 'label']].rename(columns={'real': 'c'}))
+    dataset_test = Dataset.from_pandas(df_test[['file_1']].rename(columns={'file_1': 'c'}))
 
+    # Tokenize function
+    def tokenize_function(examples):
+        return tokenizer(examples['c'], truncation=True, padding='max_length')
+
+    tokenized_train = dataset_train.map(tokenize_function, batched=True)
+    tokenized_test = dataset_test.map(tokenize_function, batched=True)
+
+    # Train/test split
+    train_test_split = tokenized_train.train_test_split(test_size=0.2)
+    train_dataset = train_test_split['train']
+    eval_dataset = train_test_split['test']
 
     # Model
     model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=2)
 
     # Training
+    training_args = TrainingArguments(output_dir="./fake-or-real-impostor-hunt/results", num_train_epochs=1)
     trainer = Trainer(
         model=model,
-        args=TrainingArguments(output_dir="./results", evaluation_strategy="epoch"),
-        train_dataset=tokenized_ids_train[:80],
-        eval_dataset=tokenized_ids_train[80:]
+        args=training_args,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset
     )
     trainer.train()
-    output = trainer.predict(tokenized_ids_1)
+    predict = trainer.predict(tokenized_test)
     pass
 
 if __name__ == "__main__":

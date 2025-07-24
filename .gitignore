@@ -7,4 +7,5 @@ dataset/
 .zip
 images/
 .env
+results/
 __pycache__
