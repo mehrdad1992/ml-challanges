@@ -80,11 +80,17 @@ def main():
         margin_1 = real1 - fake1
         margin_2 = real2 - fake2
         if margin_1 > margin_2:
-            predicted_real_indices.append(0)
-        else:
             predicted_real_indices.append(1)
+        else:
+            predicted_real_indices.append(2)
 
-    pd.Series(predicted_real_indices).to_csv("submission.csv", index=False, header=False)
+    # To covert predicted_real_indices *list* to *dataframe*
+    predicted_real_indices_df = pd.DataFrame({'real_text_id': predicted_real_indices})
+    predicted_real_indices_df['id'] = predicted_real_indices_df.index
+    predicted_real_indices_df = predicted_real_indices_df[['id', 'real_text_id']]
+    
+    # To write dataframe to csv file
+    predicted_real_indices_df.to_csv('./fake-or-real-impostor-hunt/submission.csv', index=False)
 
 if __name__ == "__main__":
     main()
