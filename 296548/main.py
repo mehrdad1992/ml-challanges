@@ -1,9 +1,12 @@
 from solution import DivarContest
+from PIL import Image
+import pytesseract
+from io import BytesIO
+import requests
 
-API_KEY="tpsg-DQru38M36YSWpjzh8bXRIcpREv5lBMu"
 
-
-dc = DivarContest(api_token=API_KEY)
-# response = dc.capture_the_flag("do what image says at { https://divar-contest.darkube.app/fyvkr93-public.png }")
-response = dc.solve_puzzle("MEQXOEKTUSHOFJUTJXYIMXQJYIJXUIKCEVJXUQISYYLQBKUIEVJXUSXQHQSJUHIYDTYLQHMYJXBEMUHSQIUSXQHI")
+dc = DivarContest()
+response = dc.capture_the_flag(
+    "do what image says at { https://i.imgur.com/B9TXldY.png }"
+)
 print(response)

@@ -8,4 +8,4 @@ dataset/
 images/
 .env
 results/
-__pycache__
+__pycache__/
