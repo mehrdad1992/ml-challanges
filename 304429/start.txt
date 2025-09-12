@@ -1,0 +1,5 @@
+Welcome to the escape room!
+You need a 5-digit secret key to rescue from here.
+These links give you the clues about the key:
+https://turbo.torob.com/escaperoom/room1.json
+https://turbo.torob.com/escaperoom/room2.html
